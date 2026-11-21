@@ -283,7 +283,7 @@ private fun BoosterApp(context: Context) {
                     Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.58f)).clickable { floatingMenuOpen = false }) {
                         Surface(
                             modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight().width(292.dp)
-                                .clickable(enabled = false) {},
+                                .clickable { /* Keep taps inside the panel from dismissing the overlay. */ },
                             color = panel,
                             shape = RoundedCornerShape(topStart = 28.dp, bottomStart = 28.dp),
                             shadowElevation = 20.dp
