@@ -10,6 +10,11 @@ import android.os.Environment
 import android.os.StatFs
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,6 +27,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,7 +45,39 @@ private val white = Color(0xFFF7F3F0)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { BoosterApp(this) }
+        window.statusBarColor = android.graphics.Color.rgb(12, 5, 8)
+        window.navigationBarColor = android.graphics.Color.rgb(12, 5, 8)
+        setContent { BoosterEntry(this) }
+    }
+}
+
+@Composable
+private fun BoosterEntry(context: Context) {
+    var showSplash by remember { mutableStateOf(true) }
+    LaunchedEffect(Unit) { delay(2600); showSplash = false }
+    Box(Modifier.fillMaxSize()) {
+        BoosterApp(context)
+        if (showSplash) {
+            val pulse = rememberInfiniteTransition(label = "logo-pulse")
+            val scale by pulse.animateFloat(0.94f, 1.06f, infiniteRepeatable(tween(850), RepeatMode.Reverse), label = "logo-scale")
+            val glow by pulse.animateFloat(0.55f, 1f, infiniteRepeatable(tween(850), RepeatMode.Reverse), label = "logo-glow")
+            var progress by remember { mutableIntStateOf(0) }
+            LaunchedEffect(Unit) { while (progress < 100) { delay(22); progress = (progress + 1).coerceAtMost(100) } }
+            Box(Modifier.fillMaxSize().background(Color(0xFF0C0508)), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Box(Modifier.size(150.dp).graphicsLayer { scaleX = scale; scaleY = scale; alpha = glow }.background(Color(0xFF260A0F), RoundedCornerShape(38.dp)), contentAlignment = Alignment.Center) {
+                        Text("A", color = Color(0xFFFF252F), fontSize = 112.sp, fontWeight = FontWeight.Black)
+                    }
+                    Text("ASHUUUGAME", color = white, fontSize = 27.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
+                    Text("BOOSTERS", color = Color(0xFFFF303B), fontSize = 25.sp, fontWeight = FontWeight.Black, letterSpacing = 4.sp)
+                    Text("PLAY SMOOTHER • GAME HARDER", color = muted, fontSize = 10.sp, letterSpacing = 2.sp)
+                    Spacer(Modifier.height(22.dp))
+                    LinearProgressIndicator(progress = { progress / 100f }, modifier = Modifier.width(230.dp).height(6.dp), color = Color(0xFFFF303B), trackColor = panel2)
+                    Text("INITIALIZING...  $progress%", color = muted, fontSize = 11.sp, letterSpacing = 2.sp)
+                }
+                Text("POWERED BY ASHUUUGAME", modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 34.dp), color = Color(0xFF9A3540), fontSize = 10.sp, letterSpacing = 2.sp)
+            }
+        }
     }
 }
 
