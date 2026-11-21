@@ -10,6 +10,17 @@ import android.os.Environment
 import android.os.StatFs
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -89,6 +100,8 @@ private data class GameApp(val name: String, val packageName: String)
 private fun BoosterApp(context: Context) {
     var page by remember { mutableStateOf(Page.Lobby) }
     var drawerOpen by remember { mutableStateOf(false) }
+    var floatingMenuOpen by remember { mutableStateOf(false) }
+    var handleOffsetY by remember { mutableFloatStateOf(0f) }
     var profile by remember { mutableStateOf("Balanced") }
     var seconds by remember { mutableIntStateOf(0) }
     var running by remember { mutableStateOf(false) }
@@ -198,7 +211,9 @@ private fun BoosterApp(context: Context) {
                 }
             }
         ) {
+            Box(Modifier.fillMaxSize()) {
             Scaffold(
+                modifier = Modifier.blur(if (floatingMenuOpen) 7.dp else 0.dp),
                 containerColor = bg,
                 topBar = {
                     Row(Modifier.fillMaxWidth().background(bg).padding(horizontal = 20.dp, vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -229,6 +244,90 @@ private fun BoosterApp(context: Context) {
                         Page.Lobby -> LobbyScreen(games, energy, { energy = (energy + 50).coerceAtMost(560) }, { page = Page.Labs }, { launchGame(context, it.packageName) }, { loadGames() })
                         Page.Labs -> LabsScreen(selectedTab, { selectedTab = it }, dnsTuner, { dnsTuner = it }, sessionMonitor, { sessionMonitor = it }, visualBoost, { visualBoost = it }, fpsOverlay, { fpsOverlay = it }, profile, { profile = it }, seconds, running, { running = !running })
                         Page.Settings -> SettingsScreen(profile, dnsTuner, sessionMonitor, visualBoost, fpsOverlay, userId)
+                    }
+                }
+            }
+                // Floating edge handle and animated quick-navigation drawer
+                if (!floatingMenuOpen) {
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .offset { IntOffset(0, handleOffsetY.roundToInt()) }
+                            .pointerInput(Unit) {
+                                detectDragGestures { change, dragAmount ->
+                                    change.consume()
+                                    handleOffsetY = (handleOffsetY + dragAmount.y).coerceIn(-420f, 420f)
+                                }
+                            }
+                            .clickable { floatingMenuOpen = true },
+                        color = orange,
+                        shape = RoundedCornerShape(topStart = 18.dp, bottomStart = 18.dp),
+                        shadowElevation = 10.dp
+                    ) {
+                        Column(
+                            Modifier.padding(horizontal = 10.dp, vertical = 17.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(5.dp)
+                        ) {
+                            Icon(Icons.Default.Bolt, contentDescription = "Open booster menu", tint = Color.White)
+                            Text("MENU", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Black)
+                        }
+                    }
+                }
+                AnimatedVisibility(
+                    visible = floatingMenuOpen,
+                    modifier = Modifier.fillMaxSize(),
+                    enter = fadeIn(tween(180)) + slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(260)),
+                    exit = fadeOut(tween(150)) + slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(220))
+                ) {
+                    Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.58f)).clickable { floatingMenuOpen = false }) {
+                        Surface(
+                            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight().width(292.dp)
+                                .clickable(enabled = false) {},
+                            color = panel,
+                            shape = RoundedCornerShape(topStart = 28.dp, bottomStart = 28.dp),
+                            shadowElevation = 20.dp
+                        ) {
+                            Column(Modifier.fillMaxSize().padding(20.dp)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Column(Modifier.weight(1f)) {
+                                        Text("ASHUUUGAME", color = orange, fontSize = 20.sp, fontWeight = FontWeight.Black)
+                                        Text("BOOSTERS • QUICK MENU", color = muted, fontSize = 10.sp)
+                                    }
+                                    IconButton(onClick = { floatingMenuOpen = false }) {
+                                        Icon(Icons.Default.Close, contentDescription = "Close menu", tint = white)
+                                    }
+                                }
+                                Spacer(Modifier.height(22.dp))
+                                Text("CONTROL CENTER", color = muted, fontSize = 10.sp, letterSpacing = 2.sp)
+                                Spacer(Modifier.height(12.dp))
+                                Page.values().forEach { item ->
+                                    val selected = page == item
+                                    NavigationDrawerItem(
+                                        label = { Text(item.label, fontWeight = FontWeight.SemiBold) },
+                                        selected = selected,
+                                        onClick = { page = item; floatingMenuOpen = false; drawerOpen = false },
+                                        icon = { Icon(when (item) {
+                                            Page.Profile -> Icons.Default.Person
+                                            Page.Lobby -> Icons.Default.SportsEsports
+                                            Page.Labs -> Icons.Default.Science
+                                            Page.Settings -> Icons.Default.Settings
+                                        }, contentDescription = null) },
+                                        colors = NavigationDrawerItemDefaults.colors(
+                                            selectedContainerColor = panel2,
+                                            selectedTextColor = orange,
+                                            selectedIconColor = orange,
+                                            unselectedTextColor = white,
+                                            unselectedIconColor = muted
+                                        ),
+                                        modifier = Modifier.padding(vertical = 4.dp)
+                                    )
+                                }
+                                Spacer(Modifier.weight(1f))
+                                Text("Drag the edge tab to reposition it.", color = muted, fontSize = 11.sp)
+                                Text("Version 1.1 • ASHUUUGAME", color = orange, fontSize = 11.sp)
+                            }
+                        }
                     }
                 }
             }
