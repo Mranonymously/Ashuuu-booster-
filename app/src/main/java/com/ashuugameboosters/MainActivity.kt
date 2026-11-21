@@ -129,10 +129,12 @@ private fun BoosterApp(context: Context) {
         while (true) { delay(5000); refreshStats() }
     }
     LaunchedEffect(running) { while (running) { delay(1000); seconds++ } }
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    LaunchedEffect(drawerOpen) { if (drawerOpen) drawerState.open() else drawerState.close() }
 
     MaterialTheme(colorScheme = darkColorScheme(primary = orange, secondary = orange, background = bg, surface = panel)) {
         ModalNavigationDrawer(
-            drawerState = rememberDrawerState(if (drawerOpen) DrawerValue.Open else DrawerValue.Closed),
+            drawerState = drawerState,
             drawerContent = {
                 ModalDrawerSheet(drawerContainerColor = panel, modifier = Modifier.width(300.dp)) {
                     Spacer(Modifier.height(24.dp))
