@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -213,7 +214,7 @@ private fun BoosterApp(context: Context) {
         ) {
             Box(Modifier.fillMaxSize()) {
             Scaffold(
-                modifier = Modifier.blur(if (floatingMenuOpen) 7.dp else 0.dp),
+                modifier = Modifier.blur(if (floatingMenuOpen) 5.dp else 0.dp),
                 containerColor = bg,
                 topBar = {
                     Row(Modifier.fillMaxWidth().background(bg).padding(horizontal = 20.dp, vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -280,7 +281,7 @@ private fun BoosterApp(context: Context) {
                     enter = fadeIn(tween(180)) + slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(260)),
                     exit = fadeOut(tween(150)) + slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(220))
                 ) {
-                    Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.58f)).clickable { floatingMenuOpen = false }) {
+                    Box(Modifier.fillMaxSize().background(Color(0xCC0C0508)).clickable { floatingMenuOpen = false }) {
                         Surface(
                             modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight().width(292.dp)
                                 .clickable { /* Keep taps inside the panel from dismissing the overlay. */ },
@@ -290,16 +291,24 @@ private fun BoosterApp(context: Context) {
                         ) {
                             Column(Modifier.fillMaxSize().padding(20.dp)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.ic_launcher),
+                                        contentDescription = "ASHUUUGAME BOOSTERS logo",
+                                        modifier = Modifier.size(48.dp)
+                                    )
+                                    Spacer(Modifier.width(12.dp))
                                     Column(Modifier.weight(1f)) {
-                                        Text("ASHUUUGAME", color = orange, fontSize = 20.sp, fontWeight = FontWeight.Black)
-                                        Text("BOOSTERS • QUICK MENU", color = muted, fontSize = 10.sp)
+                                        Text("ASHUUUGAME", color = white, fontSize = 18.sp, fontWeight = FontWeight.Black)
+                                        Text("BOOSTERS • QUICK MENU", color = Color(0xFFFF5962), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                                     }
                                     IconButton(onClick = { floatingMenuOpen = false }) {
                                         Icon(Icons.Default.Close, contentDescription = "Close menu", tint = white)
                                     }
                                 }
                                 Spacer(Modifier.height(22.dp))
-                                Text("CONTROL CENTER", color = muted, fontSize = 10.sp, letterSpacing = 2.sp)
+                                HorizontalDivider(color = Color(0x66FF303B), thickness = 1.dp)
+                                Spacer(Modifier.height(18.dp))
+                                Text("CONTROL CENTER", color = Color(0xFFFF5962), fontSize = 10.sp, letterSpacing = 2.sp, fontWeight = FontWeight.Bold)
                                 Spacer(Modifier.height(12.dp))
                                 Page.values().forEach { item ->
                                     val selected = page == item
@@ -325,6 +334,7 @@ private fun BoosterApp(context: Context) {
                                 }
                                 Spacer(Modifier.weight(1f))
                                 Text("Drag the edge tab to reposition it.", color = muted, fontSize = 11.sp)
+                                Text("PLAY SMOOTHER • GAME HARDER", color = Color(0xFFFF5962), fontSize = 10.sp, letterSpacing = 1.sp, fontWeight = FontWeight.Bold)
                                 Text("Version 1.1 • ASHUUUGAME", color = orange, fontSize = 11.sp)
                             }
                         }
