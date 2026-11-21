@@ -52,7 +52,7 @@ private fun BoosterHome(context: Context) {
     }
     val temp = remember {
         runCatching {
-            val i = context.registerReceiver(null, android.content.IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+            val i = context.registerReceiver(null, android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED))
             (i?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1) ?: -1) / 10f
         }.getOrDefault(-1f)
     }
